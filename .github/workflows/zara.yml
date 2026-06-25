@@ -1,0 +1,28 @@
+name: zara-stock
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # cada ~15 min (GitHub puede demorar las corridas programadas)
+  workflow_dispatch:          # boton para correrlo a mano desde la pestaña Actions (para probar)
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          pip install playwright requests
+          python -m playwright install --with-deps chromium
+
+      - name: Revisar stock en ZARA
+        env:
+          PRODUCT_URL: ${{ secrets.PRODUCT_URL }}
+          TALLES: ${{ secrets.TALLES }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python zara_check.py
